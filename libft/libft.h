@@ -6,7 +6,7 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/08 13:40:34 by mring             #+#    #+#             */
-/*   Updated: 2025/03/19 19:26:31 by mring            ###   ########.fr       */
+/*   Updated: 2025/03/26 12:47:03 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 # define LIBFT_H
 
 # include "ft_printf/ft_printf.h"
-# include "get_next_line/get_next_line_bonus.h"
 # include <stdlib.h>
 # include <unistd.h>
 

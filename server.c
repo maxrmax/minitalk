@@ -6,7 +6,7 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 13:01:20 by mring             #+#    #+#             */
-/*   Updated: 2025/03/25 15:34:47 by mring            ###   ########.fr       */
+/*   Updated: 2025/03/26 12:49:32 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	handler(int sig)
 	static int				bits;
 
 	if (sig == SIGUSR2)
-		character = 1 << bits | character;
+		character |= 1 << bits;
 	bits++;
 	if (bits == 8)
 	{
@@ -31,7 +31,7 @@ void	handler(int sig)
 
 int	main(void)
 {
-	struct sigaction sa;
+	struct sigaction	sa;
 
 	sa.sa_handler = handler;
 	sa.sa_flags = 0;
