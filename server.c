@@ -6,7 +6,7 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 13:01:20 by mring             #+#    #+#             */
-/*   Updated: 2025/03/26 17:18:13 by mring            ###   ########.fr       */
+/*   Updated: 2025/03/26 19:13:07 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ void	handler(int sig, siginfo_t *info, void *ucontext)
 	if (sig == SIGUSR2)
 		character |= (1 << (7 - bits));
 	bits++;
+	kill(info->si_pid, SIGUSR1);
 	if (bits == 8)
 	{
 		if (character == '\0')
@@ -47,6 +48,8 @@ int	main(void)
 	sa.sa_sigaction = handler;
 	sa.sa_flags = SA_SIGINFO;
 	sigemptyset(&sa.sa_mask);
+	sigaddset(&sa.sa_mask, SIGUSR1);
+	sigaddset(&sa.sa_mask, SIGUSR2);
 	sigaction(SIGUSR1, &sa, NULL);
 	sigaction(SIGUSR2, &sa, NULL);
 	ft_printf("Server PID: %d\n", getpid());
