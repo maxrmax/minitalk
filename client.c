@@ -6,35 +6,56 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 13:01:33 by mring             #+#    #+#             */
-/*   Updated: 2025/03/25 15:45:21 by mring            ###   ########.fr       */
+/*   Updated: 2025/03/26 17:20:05 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "./libft/libft.h"
 #include <signal.h>
 
-int	send_char(int server_pid, unsigned char c)
+volatile sig_atomic_t	g_ack_received = 0;
+
+void	ack_handler(int sig)
+{
+	(void)sig;
+	g_ack_received = 1;
+}
+
+void	send_char(int pid, unsigned char c)
 {
 	int	bit;
 
-	bit = 0;
-	while (bit < 8)
+	bit = 7;
+	while (bit >= 0)
 	{
-		kill(server_pid, SIGUSR1 + !!(c & (1 << bit++)));
-		usleep(50);
+		g_ack_received = 0;
+		kill(pid, SIGUSR1 + ((c >> bit--) & 1));
+		usleep(100);
 	}
-	return (1);
+}
+
+void	send_message(int pid, char *str)
+{
+	struct sigaction	sa;
+	int					i;
+
+	i = 0;
+	sa.sa_handler = ack_handler;
+	sa.sa_flags = 0;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGUSR1, &sa, NULL);
+	while (str[i])
+		send_char(pid, str[i++]);
+	send_char(pid, '\0');
+	while (!g_ack_received)
+		pause();
 }
 
 int	main(int ac, char **av)
 {
-	int	i;
-
-	i = 0;
 	if (ac == 3)
-		while (av[2][i] != '\0')
-			send_char(ft_atoi(av[1]), av[2][i++]);
+		send_message(ft_atoi(av[1]), av[2]);
 	else
-		return (ft_printf("Wrong Usage: %s <server_pid> <string>\n", av[0]), 1);
+		return (ft_printf("Usage: %s <server_pid> <string>\n", av[0]), 1);
 	return (0);
 }

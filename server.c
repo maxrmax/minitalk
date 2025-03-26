@@ -6,24 +6,35 @@
 /*   By: mring <mring@student.42heilbronn.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/21 13:01:20 by mring             #+#    #+#             */
-/*   Updated: 2025/03/26 12:49:32 by mring            ###   ########.fr       */
+/*   Updated: 2025/03/26 17:18:13 by mring            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "./libft/libft.h"
 #include <signal.h>
 
-void	handler(int sig)
+void	handler(int sig, siginfo_t *info, void *ucontext)
 {
-	static unsigned char	character;
-	static int				bits;
+	static sig_atomic_t	character;
+	static sig_atomic_t	bits;
+	static pid_t		current_client;
 
+	(void)ucontext;
+	if (info->si_pid != current_client)
+	{
+		character = 0;
+		bits = 0;
+		current_client = info->si_pid;
+	}
 	if (sig == SIGUSR2)
-		character |= 1 << bits;
+		character |= (1 << (7 - bits));
 	bits++;
 	if (bits == 8)
 	{
-		ft_printf("%c", character);
+		if (character == '\0')
+			kill(current_client, SIGUSR1);
+		else
+			write(1, &character, 1);
 		bits = 0;
 		character = 0;
 	}
@@ -33,14 +44,11 @@ int	main(void)
 {
 	struct sigaction	sa;
 
-	sa.sa_handler = handler;
-	sa.sa_flags = 0;
-	if (sigaction(SIGUSR1, &sa, NULL) == -1 || sigaction(SIGUSR2, &sa, NULL) ==
-		-1)
-	{
-		ft_printf("Failed to set signal handler\n");
-		exit(1);
-	}
+	sa.sa_sigaction = handler;
+	sa.sa_flags = SA_SIGINFO;
+	sigemptyset(&sa.sa_mask);
+	sigaction(SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR2, &sa, NULL);
 	ft_printf("Server PID: %d\n", getpid());
 	while (1)
 		pause();
